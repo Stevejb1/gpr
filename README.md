@@ -1,4 +1,4 @@
-# gpr: Power Analysis for R
+# gpr: General Power for R
 
 A comprehensive power analysis package for R implementing statistical power analyses for t-tests, F-tests, chi-square tests, z-tests, and exact tests. Includes a Shiny GUI, interactive console menu, and direct function API.
 
