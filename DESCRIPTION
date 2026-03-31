@@ -1,0 +1,23 @@
+Package: gpr
+Title: Power Analysis for R
+Version: 0.0.0.9000
+Authors@R: 
+    person("Steve", "Jean-Baptiste", , "sj1021433@wcupa.edu", role = c("aut", "cre"))
+Description: A comprehensive power analysis package for R implementing 
+    statistical power analyses similar to those available in G*Power 3.1 
+    (Faul et al., 2007). Supports t-tests, F-tests, chi-square tests, 
+    z-tests, and exact tests with programmatic API, interactive console 
+    menu, Shiny GUI, and publication-quality plots.
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Imports:
+    ggplot2,
+    scales
+Suggests:
+    shiny,
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
