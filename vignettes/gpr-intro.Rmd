@@ -1,0 +1,72 @@
+---
+title: "Introduction to gpr: General Power for R"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to gpr: General Power for R}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Overview
+
+gpr is a comprehensive power analysis package for R implementing statistical 
+power analyses for t-tests, F-tests, chi-square tests, z-tests, and exact tests.
+
+## Installation
+```r
+pak::pak("Stevejb1/gpr")
+```
+
+## Basic Usage
+
+### A priori: How many participants do I need?
+```r
+library(gpr)
+
+gpr_ttest(test = "two.sample", analysis = "a_priori",
+          effect_size = 0.5, alpha = 0.05, power = 0.80)
+```
+
+### Post hoc: What power did I achieve?
+```r
+gpr_ttest(test = "two.sample", analysis = "post_hoc",
+          effect_size = 0.5, alpha = 0.05, n = 50)
+```
+
+### F-test: One-way ANOVA
+```r
+gpr_ftest(test = "anova.one.way", analysis = "a_priori",
+          effect_size = 0.25, alpha = 0.05, power = 0.80,
+          groups = 3)
+```
+
+### Chi-square: Goodness of fit
+```r
+gpr_chisq(test = "gof", analysis = "a_priori",
+          effect_size = 0.30, alpha = 0.05, power = 0.80,
+          df = 5)
+```
+
+### Effect size converters
+```r
+gpr_effect_size(0.5, from = "d")
+effect_size_benchmarks()
+```
+
+## Interfaces
+
+### Shiny GUI
+```r
+launch_gpr()
+```
+
+### Console menu
+```r
+gpr()
+```
+
+## Citation
+
+Faul, F., Erdfelder, E., Lang, A.-G., & Buchner, A. (2007). G*Power 3: 
+A flexible statistical power analysis program for the social, behavioral, 
+and biomedical sciences. *Behavior Research Methods, 39*, 175-191.

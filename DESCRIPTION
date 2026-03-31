@@ -1,6 +1,8 @@
 Package: gpr
 Title: Power Analysis for R
-Version: 0.0.0.9000
+Version: 0.1.0
+Depends:
+    R (>= 4.1.0)
 Authors@R: 
     person("Steve", "Jean-Baptiste", , "sj1021433@wcupa.edu", role = c("aut", "cre"))
 Description: A comprehensive power analysis package for R implementing 
@@ -14,12 +16,13 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports:
     ggplot2,
-    scales
+    scales,
+    shiny
 Suggests:
-    shiny,
     testthat (>= 3.0.0),
+    rstudioapi,
     knitr,
     rmarkdown
-VignetteBuilder: knitr
 URL: https://github.com/Stevejb1/gpr
 BugReports: https://github.com/Stevejb1/gpr/issues
+VignetteBuilder: knitr
