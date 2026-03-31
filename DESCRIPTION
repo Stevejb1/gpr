@@ -4,12 +4,13 @@ Version: 0.1.0
 Depends:
     R (>= 4.1.0)
 Authors@R: 
-    person("Steve", "Jean-Baptiste", , "sj1021433@wcupa.edu", role = c("aut", "cre"))
-Description: A comprehensive power analysis package for R implementing 
-    statistical power analyses similar to those available in G*Power 3.1 
-    (Faul et al., 2007). Supports t-tests, F-tests, chi-square tests, 
-    z-tests, and exact tests with programmatic API, interactive console 
-    menu, Shiny GUI, and publication-quality plots.
+    person("Steve", "Jean-Baptiste", , "stevejb.dev@gmail.com", role = c("aut", "cre"))
+Description: A comprehensive power analysis package implementing statistical 
+    power analyses for t-tests, F-tests, chi-square tests, z-tests, and exact 
+    tests. Provides five analysis modes (a priori, post hoc, sensitivity, 
+    criterion, and compromise), effect size converters, publication-quality 
+    plots, an interactive Shiny GUI, and a console menu interface. Methods 
+    based on Faul et al. (2007) <doi; 10.3758/BF03193146>.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
