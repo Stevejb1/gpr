@@ -279,12 +279,20 @@ gpr_menu_inputs <- function(test_choice, analysis) {
       params$p1 <- p1
     } else {
       es_input <- readline(prompt)
-      params$effect_size <- if (es_input == "") 0.5 else as.numeric(es_input)
+      default_es <- switch(test_choice$fn,
+        "ttest" = 0.5,
+        "ftest" = 0.25,
+        "chisq" = 0.3,
+        "ztest" = 0.5,
+        "exact" = 0.15,
+        0.5
+      )
+      params$effect_size <- if (es_input == "") default_es else as.numeric(es_input)
     }
   }
 
   # Alpha
-  if (analysis != "criterion") {
+  if (!analysis %in% c("criterion", "compromise")) {
     alpha_input <- readline("  Alpha (significance level) [default 0.05]: ")
     params$alpha <- if (alpha_input == "") 0.05 else as.numeric(alpha_input)
   }

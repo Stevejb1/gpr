@@ -275,14 +275,16 @@ gpr_shiny_app <- function() {
                                "t" = 0.50, "f" = 0.25, "chisq" = 0.30,
                                "z" = 0.50, "exact" = 0.15, 0.50)
           fields <- c(fields, list(
-            shiny::numericInput("effect_size",
-                                "Effect size (default = medium)",
-                                default_es, 0, 10, 0.01)
+            shiny::numericInput(
+              paste0("es_", input$family),
+              sprintf("Effect size (default = medium = %s)",
+                      default_es),
+              default_es, 0, 10, 0.01)
           ))
         }
       }
 
-      if (input$analysis != "criterion") {
+      if (!input$analysis %in% c("criterion", "compromise")) {
         fields <- c(fields, list(
           shiny::numericInput("alpha", "Alpha (default = 0.05)",
                               0.05, 0.001, 0.999, 0.001)
@@ -379,17 +381,25 @@ gpr_shiny_app <- function() {
         if (!is.null(res$total_n))     args$n           <- res$total_n
         else if (!is.null(res$n))      args$n           <- res$n
       } else {
-        if (!is.null(input$effect_size))
-          args$effect_size     <- input$effect_size
-        if (!is.null(input$alpha))     args$alpha       <- input$alpha
+        if (!is.null(input[[paste0("es_", input$family)]]))
+          args$effect_size     <- input[[paste0("es_", input$family)]]
+        if (!is.null(input$alpha) &&
+            !input$analysis %in% c("criterion", "compromise"))
+          args$alpha <- input$alpha
         if (!is.null(input$power))     args$power       <- input$power
         if (!is.null(input$n))         args$n           <- input$n
         if (!is.null(input$beta_alpha_ratio))
           args$beta_alpha_ratio <- input$beta_alpha_ratio
       }
-      if (!is.null(input$groups))     args$groups      <- input$groups
-      if (!is.null(input$predictors)) args$predictors  <- input$predictors
-      if (!is.null(input$df))         args$df          <- input$df
+      if (!is.null(input$groups) && input$family == "f")
+        args$groups <- input$groups
+      if (!is.null(input$predictors) && input$family == "f" &&
+          !is.null(input$test) &&
+          input$test %in% c("reg.r2.deviation", "reg.r2.increase",
+                            "hotelling.one", "hotelling.two"))
+        args$predictors <- input$predictors
+      if (!is.null(input$df) && input$family == "chisq")
+        args$df <- input$df
       if (!is.null(input$tails) &&
           input$family %in% c("t", "z", "exact"))
         args$tails <- as.integer(input$tails)
@@ -434,6 +444,40 @@ gpr_shiny_app <- function() {
                           "compromise"  = round(res$power, 4)
       )
 
+      # Build cards based on test family
+      card3_label <- switch(input$family,
+                            "t"     = "Critical t",
+                            "f"     = "Critical F",
+                            "chisq" = "Critical Chi-sq",
+                            "z"     = "Critical z",
+                            "exact" = "Alpha",
+                            "Alpha"
+      )
+      card3_value <- switch(input$family,
+                            "t"     = round(if (!is.null(res$critical_t)) res$critical_t else res$alpha, 4),
+                            "f"     = round(if (!is.null(res$critical_f)) res$critical_f else res$alpha, 4),
+                            "chisq" = round(if (!is.null(res$critical_chisq)) res$critical_chisq else res$alpha, 4),
+                            "z"     = round(if (!is.null(res$critical_z)) res$critical_z else res$alpha, 4),
+                            "exact" = round(res$alpha, 4),
+                            round(res$alpha, 4)
+      )
+      card4_label <- switch(input$family,
+                            "t"     = "Noncentrality (delta)",
+                            "f"     = "Noncentrality (lambda)",
+                            "chisq" = "Noncentrality (lambda)",
+                            "z"     = "Noncentrality",
+                            "exact" = "Beta",
+                            "Beta"
+      )
+      card4_value <- switch(input$family,
+                            "t"     = round(if (!is.null(res$noncentrality)) res$noncentrality else res$beta, 4),
+                            "f"     = round(if (!is.null(res$noncentrality)) res$noncentrality else res$beta, 4),
+                            "chisq" = round(if (!is.null(res$noncentrality)) res$noncentrality else res$beta, 4),
+                            "z"     = round(if (!is.null(res$noncentrality)) res$noncentrality else res$beta, 4),
+                            "exact" = round(res$beta, 4),
+                            round(res$beta, 4)
+      )
+
       shiny::fluidRow(
         shiny::column(3,
                       shiny::div(class = "result-box", style = "text-align:center;",
@@ -450,14 +494,14 @@ gpr_shiny_app <- function() {
         ),
         shiny::column(3,
                       shiny::div(class = "result-box", style = "text-align:center;",
-                                 shiny::div(class = "result-label", "Alpha"),
-                                 shiny::div(class = "result-value", round(res$alpha, 4))
+                                 shiny::div(class = "result-label", card3_label),
+                                 shiny::div(class = "result-value", card3_value)
                       )
         ),
         shiny::column(3,
                       shiny::div(class = "result-box", style = "text-align:center;",
-                                 shiny::div(class = "result-label", "Beta"),
-                                 shiny::div(class = "result-value", round(res$beta, 4))
+                                 shiny::div(class = "result-label", card4_label),
+                                 shiny::div(class = "result-value", card4_value)
                       )
         )
       )
@@ -625,7 +669,11 @@ gpr_shiny_app <- function() {
         else max(n - num_df - 1, 1)
         ncp_val <- es^2 * n
         crit    <- qf(1 - alph, num_df, den_df)
-        x_max   <- max(qf(0.999, num_df, den_df, ncp = ncp_val), crit * 2)
+        x_max <- tryCatch(
+          max(qf(0.999, num_df, den_df, ncp = ncp_val), crit * 2),
+          error = function(e) crit * 3
+        )
+        if (!is.finite(x_max)) x_max <- crit * 3
         x       <- seq(0, x_max, length.out = 500)
         h0      <- df(x, num_df, den_df)
         h1      <- df(x, num_df, den_df, ncp = ncp_val)
@@ -735,7 +783,7 @@ gpr_shiny_app <- function() {
         num_df <- if (!is.null(res$num_df)) res$num_df else 2
         function(n) {
           den_df  <- n - num_df - 1
-          if (den_df <= 0) return(NA)
+          if (length(den_df) == 0 || any(den_df <= 0)) return(NA)
           ncp_val <- es^2 * n
           crit    <- qf(1 - alph, num_df, den_df)
           pf(crit, num_df, den_df, ncp = ncp_val, lower.tail = FALSE)
